@@ -3,3 +3,5 @@ flask-migrate
 flask-sqlalchemy
 graphene
 graphene-sqlalchemy
+Flask-PyMongo=2.3.0
+python-dotenv
