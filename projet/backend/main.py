@@ -1,6 +1,7 @@
 from flask import Blueprint
 from .extensions import mongo
 import json
+
 main= Blueprint('main',__name__)
 
 @main.route('/')
