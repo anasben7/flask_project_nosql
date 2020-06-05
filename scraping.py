@@ -21,7 +21,7 @@ def fetch_trends(country):
     trend_dates = soup.find_all("pubdate")
     
     for title, traffic, description, trend_date in zip(titles[1:], approximate_traffic, descriptions[1:], trend_dates):
-        db.trends.insert_one({"title":title.text,"approx_traffic":traffic.text, "description":description.text, "trend time":trend_date.text })
+        db.trends.insert_one({"title":title.text,"approx_traffic":traffic.text, "description":description.text, "trend_time":trend_date.text })
 
     
     return {title.text: re.sub("[+,]", "", traffic.text)

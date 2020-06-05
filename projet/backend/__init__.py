@@ -1,10 +1,20 @@
 from flask import Flask
 from .extensions import mongo
 from .main import main
+from .schemas import schema as sc
+from flask_graphql import GraphQLView
+from mongoengine import connect
+
+connect("graphene-mongo-example", host="mongodb://localhost:27017/test1", alias="default")
+
 
 def create_app(config='backend.settings'):
     app=Flask(__name__)
     app.config.from_object(config)
     mongo.init_app(app)
     app.register_blueprint(main)
+
+    view_func = GraphQLView.as_view("graphql", schema=sc, graphiql=True)
+
+    app.add_url_rule("/graphql",view_func=view_func)
     return app

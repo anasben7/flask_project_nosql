@@ -5,3 +5,6 @@ graphene
 graphene-sqlalchemy
 Flask-PyMongo=2.3.0
 python-dotenv
+graphene
+flask-graphql
+graphene-mongo
