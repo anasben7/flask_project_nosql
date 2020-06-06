@@ -27,8 +27,20 @@ def fetch_trends(country):
     return {title.text: re.sub("[+,]", "", traffic.text)
             for title, traffic in zip(titles[1:], approximate_traffic)}
 
+def fetch_trends2(country):
+    doc = fetch_url(country)
+    soup = BeautifulSoup(doc, "html.parser")
+    titles = soup.find_all("title")
+    descriptions=soup.find_all("description")
+    approximate_traffic = soup.find_all("ht:approx_traffic")
+    trend_dates = soup.find_all("pubdate")
+
+    
+    return {title.text: re.sub("[+,]", "", traffic.text)
+            for title, traffic in zip(titles[1:], approximate_traffic)}
+
 
 if __name__ == '__main__':
-    trends = fetch_trends("US")
+    trends = fetch_trends2("US")
     # if you want to print the result
     print(trends)
