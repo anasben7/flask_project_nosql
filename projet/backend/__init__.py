@@ -11,7 +11,7 @@ def create_app(config='backend.settings'):
     mongo.init_app(app)
     app.register_blueprint(main)
     from .schemas.schemas import schema as sc
-    #connect("projet", host="mongodb://localhost:27017/test1", alias="default")
+    connect("projet", host="mongodb://localhost:27017/test1", alias="default")
     view_func = GraphQLView.as_view("graphql", schema=sc, graphiql=True)
 
     app.add_url_rule("/graphql",view_func=view_func)

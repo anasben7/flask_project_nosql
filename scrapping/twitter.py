@@ -1,8 +1,14 @@
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
+import datetime
 import json
 import tweepy
+from pymongo import MongoClient
+
+client = MongoClient('127.0.0.1', 27017)
+db = client.test1
+
 
 
 #Variables that contains the user credentials to access Twitter API
@@ -11,36 +17,33 @@ ACCESS_TOKEN_SECRET = "GQrGPwhJehHwhQiw7pTC4CzXMioRLBFNWSpiwqIzkZAjA"
 CONSUMER_KEY = "XRuZQD2Sq8Ojtvo3dbe1Z2U0M"
 CONSUMER_SECRET = "FRjWoFHTSxWKIYfRZCsifD6jRJRjTJBunet8JUj4pJOiZp2y4x"
 
-class StdOutListener(StreamListener):
-        def on_data(self, data):
-                fhOut.write(data)
-                descr=json.loads(data)["descr_"]
-                """ print(descr) """
-        def on_error(self, status):
-                """ print(status) """
+
 
 if __name__ == '__main__':
-        try:
-               
-                fhOut = open("data.json","a")
-                listener = StdOutListener()
-                auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-                auth.set_access_token(ACCESS_TOKEN,ACCESS_TOKEN_SECRET)
-                stream = Stream(auth, listener)
-                api = tweepy.API(auth)
-                tags = api.trends_place(2442047)
-                print(tags)
-
-                """ Search for a specific keyWord """
-                stream.filter(track=['covid-19'])
-
-        except KeyboardInterrupt:
-                 pass
-
-        fhOut.close()
+        auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
+        auth.set_access_token(ACCESS_TOKEN,ACCESS_TOKEN_SECRET)
+        api = tweepy.API(auth)
+        tags = api.trends_place(23424977)
+        print(tags)
+        
+        for a in tags :
+             for b in a["trends"]:
+                 db.tweets.insert_one({"tweet":b["name"],"url":b["url"],"tweet_volume":b["tweet_volume"],"Country":"USA","as_of":datetime.datetime.now()})
+                
+            
 
 
 
+#Countries IDs
+
+ # USA=23424977
+ # UK=23424975
+ # Canada=23424768
+ # Australia=23424748
+
+
+
+#USA States IDs
 
 # New York, New York, 2459115
 # Los Angeles, California, 2442047

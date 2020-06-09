@@ -3,7 +3,7 @@ from pytrends.request import TrendReq
 from pymongo import MongoClient
 
 client = MongoClient('127.0.0.1', 27017)
-db = client.test2
+db = client.test1
 pytrend = TrendReq()
 
 pytrend.build_payload(kw_list=['Taylor Swift'])

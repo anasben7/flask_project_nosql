@@ -41,6 +41,6 @@ def fetch_trends2(country):
 
 
 if __name__ == '__main__':
-    trends = fetch_trends2("US")
+    trends = fetch_trends("US")
     # if you want to print the result
     print(trends)
