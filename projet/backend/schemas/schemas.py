@@ -17,6 +17,7 @@ class Query(graphene.ObjectType):
     total = graphene.Int()
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
     trd= graphene.List(Trend)
+    
     def resolve_trd(self, info):
         return mongo.db.trends.find()
         
