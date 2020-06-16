@@ -1,1 +1,2 @@
 google-trends-scraper
+tweepy

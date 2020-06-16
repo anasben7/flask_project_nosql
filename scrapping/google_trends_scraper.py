@@ -24,7 +24,7 @@ df.drop(columns= 'mid')
 
 print(df)
 kw_list=['FSTT']
-pytrend.build_payload(kw_list=['FSTT'])
+pytrend.build_payload(kw_list=['Car'])
 related_queries = pytrend.related_queries()
 related_queries.values()
 
