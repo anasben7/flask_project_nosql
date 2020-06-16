@@ -9,3 +9,4 @@ class Tweet(Document):
     tweet_volume = StringField()
     Country = StringField()
     as_of=StringField()
+    percentage=StringField()

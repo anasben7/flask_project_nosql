@@ -26,18 +26,8 @@ class Query(graphene.ObjectType):
     trd= graphene.List(Trend)
 
     def resolve_tweets(self, info):
-        tweets=list(TweetModel.objects.all())
-        total=0
-        for x in tweets:
-            t=x.tweet_volume
-            if t is not None:
-                total+=t
-
-        for x in tweets:
-            if x.tweet_volume is not None:
-                x.percentage=(x.tweet_volume*100.0/total)
-
-        return tweets
+        
+        return list(TweetModel.objects.all())
     
     def resolve_trd(self, info):
         return mongo.db.trends.find()
