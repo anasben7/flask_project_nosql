@@ -3,20 +3,30 @@ from flask import Blueprint
 from graphene.relay import Node
 from graphene_mongo import MongoengineConnectionField, MongoengineObjectType
 from ..models.trends import Trend as TrendModel
+from ..models.tweets import Tweet as TweetModel
 from ..extensions import mongo
 
 class Trend(MongoengineObjectType):
     class Meta:
         model = TrendModel
         interfaces = (Node,)
+        
+class Tweet(MongoengineObjectType):
+    class Meta:
+        model = TweetModel
+        interfaces = (Node,)
 
 class Query(graphene.ObjectType):
     trends = graphene.List(Trend)
+    tweets = graphene.List(Tweet)
     trds = MongoengineConnectionField(Trend)
     test = graphene.List(Trend)
     total = graphene.Int()
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
     trd= graphene.List(Trend)
+
+    def resolve_tweets(self, info):
+        return list(TweetModel.objects.all())
     
     def resolve_trd(self, info):
         return mongo.db.trends.find()
