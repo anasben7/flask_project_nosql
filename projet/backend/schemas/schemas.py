@@ -4,6 +4,7 @@ from graphene.relay import Node
 from graphene_mongo import MongoengineConnectionField, MongoengineObjectType
 from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
+from ..models.keywords import Keyword as KeywordModel
 from ..extensions import mongo
 
 class Trend(MongoengineObjectType):
@@ -16,16 +17,23 @@ class Tweet(MongoengineObjectType):
         model = TweetModel
         interfaces = (Node,)
 
+class Keyword(graphene.ObjectType):
+    keyword=graphene.String()
+    
 class Query(graphene.ObjectType):
     trends = graphene.List(Trend)
-    tweets = graphene.List(Tweet)
+    tweets = graphene.List(Tweet,first=graphene.Int())
     trds = MongoengineConnectionField(Trend)
     test = graphene.List(Trend)
     total = graphene.Int()
+    kyrd=graphene.List(Keyword,k=graphene.String())
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
     trd= graphene.List(Trend)
 
-    def resolve_tweets(self, info):
+    def resolve_kyrd(self,info,k):
+        return [Keyword(keyword="Last")]
+
+    def resolve_tweets(self, info,first):
         tweets=list(TweetModel.objects.all())
         total=0
         for x in tweets:
@@ -36,8 +44,8 @@ class Query(graphene.ObjectType):
         for x in tweets:
             if x.tweet_volume is not None:
                 x.percentage=(x.tweet_volume*100.0/total)
-
-        return tweets
+        print(type(tweets))
+        return tweets[0:first]
     
     def resolve_trd(self, info):
         return mongo.db.trends.find()

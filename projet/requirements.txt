@@ -8,3 +8,5 @@ python-dotenv
 graphene
 flask-graphql
 graphene-mongo
+pytrends
+pandas
