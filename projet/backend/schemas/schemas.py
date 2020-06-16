@@ -26,6 +26,7 @@ class Query(graphene.ObjectType):
     trd= graphene.List(Trend)
 
     def resolve_tweets(self, info):
+        
         return list(TweetModel.objects.all())
     
     def resolve_trd(self, info):
