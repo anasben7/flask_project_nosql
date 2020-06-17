@@ -33,14 +33,7 @@ class Query(graphene.ObjectType):
     trd= graphene.List(Trend)
 
     def resolve_kyrd(self,info,k):
-        kyrds=[]
-        rlt=get_keywords(k)
-        tp="Top"
-        for x in rlt:
-            for y in x:
-                kyrds.append(Keyword(y[0],y[1],tp))
-            tp="Rising"     
-        return kyrds
+        -
 
     def resolve_tweets(self, info,first):
         tweets=list(TweetModel.objects.all())
