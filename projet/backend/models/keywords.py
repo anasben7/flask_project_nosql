@@ -1,10 +1,16 @@
-from mongoengine import Document
-from mongoengine.fields import StringField
+import pandas as pd                        
+from pytrends.request import TrendReq
 
+pytrend = TrendReq()
 
-class Keyword():
-    name=StringField()
-    keyword=StringField()
-    country=StringField()
-        
+def get_keywords(keyword):
+    suggest=[]
+    pytrend.build_payload(kw_list=[keyword])
+    related_queries = pytrend.related_queries()
+    liste=list(related_queries.values())[0]
+    for y in liste.values():
+        n=y.values.tolist()
+        suggest.append(n)
 
+    return suggest
+    

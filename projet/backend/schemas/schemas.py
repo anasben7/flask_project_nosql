@@ -4,8 +4,8 @@ from graphene.relay import Node
 from graphene_mongo import MongoengineConnectionField, MongoengineObjectType
 from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
-from ..models.keywords import Keyword as KeywordModel
 from ..extensions import mongo
+from ..models.keywords import get_keywords
 
 class Trend(MongoengineObjectType):
     class Meta:
@@ -19,7 +19,9 @@ class Tweet(MongoengineObjectType):
 
 class Keyword(graphene.ObjectType):
     keyword=graphene.String()
-    
+    value=graphene.Int()
+    tp=graphene.String()
+
 class Query(graphene.ObjectType):
     trends = graphene.List(Trend)
     tweets = graphene.List(Tweet,first=graphene.Int())
@@ -31,7 +33,14 @@ class Query(graphene.ObjectType):
     trd= graphene.List(Trend)
 
     def resolve_kyrd(self,info,k):
-        return [Keyword(keyword="Last")]
+        kyrds=[]
+        rlt=get_keywords(k)
+        tp="Top"
+        for x in rlt:
+            for y in x:
+                kyrds.append(Keyword(y[0],y[1],tp))
+            tp="Rising"     
+        return kyrds
 
     def resolve_tweets(self, info,first):
         tweets=list(TweetModel.objects.all())
