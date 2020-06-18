@@ -5,7 +5,77 @@ from graphene_mongo import MongoengineConnectionField, MongoengineObjectType
 from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
 from ..extensions import mongo
+from ..models.user import User
 from ..models.keywords import get_keywords
+from flask_graphql_auth import (
+    AuthInfoField,
+    GraphQLAuth,
+    get_jwt_identity,
+    create_access_token,
+    create_refresh_token,
+    query_header_jwt_required,
+    mutation_jwt_refresh_token_required,
+    mutation_jwt_required
+)
+
+
+class UserObject(MongoengineObjectType):    
+    class Meta:
+       model = User
+       interfaces = (graphene.relay.Node, )
+
+
+class CreateUser(graphene.Mutation):
+    user = graphene.Field(UserObject)
+
+    class Arguments:
+        username =graphene.String(required=True)
+        password =graphene.String(required=True)
+        email =graphene.String(required=True)
+
+    def mutate(self, info, username, password , email):
+        user = User(username=username,password=password,email=email)
+        user.save()
+        return CreateUser(user)
+
+class AuthMutation(graphene.Mutation):
+    access_token = graphene.String()
+    refresh_token = graphene.String()
+
+    class Arguments:
+        username = graphene.String()
+        password = graphene.String()
+
+    def mutate(self, info , username, password) :
+        user = User(username=username,password=password)
+        print(user)
+        if not user:
+            raise Exception('Authenication Failure : User is not registered')
+        return AuthMutation(
+            access_token = create_access_token(username),
+            refresh_token = create_refresh_token(username)
+        )
+
+class RefreshMutation(graphene.Mutation):
+    class Arguments(object):
+        refresh_token = graphene.String()
+
+    new_token = graphene.String()
+
+    @mutation_jwt_refresh_token_required
+    def mutate(self):
+        current_user = get_jwt_identity()
+        return RefreshMutation(new_token=create_access_token(identity=current_user))
+
+class Mutation(graphene.ObjectType):
+    auth = AuthMutation.Field()
+    create_user = CreateUser.Field()
+    refresh = RefreshMutation.Field()
+
+
+
+
+
 
 class Trend(MongoengineObjectType):
     class Meta:
@@ -81,4 +151,4 @@ class Query(graphene.ObjectType):
             print("total is : ",total)
         return trends
 
-schema = graphene.Schema(query=Query)
+schema = graphene.Schema(query=Query, mutation=Mutation)
