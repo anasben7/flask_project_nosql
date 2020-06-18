@@ -19,12 +19,7 @@ from flask_graphql_auth import (
 )
 
 
-class UserObject(MongoengineObjectType):
-    def __resolve_reference(self, info, **kwargs):
-
-        # common mongoengine query
-        return User.objects.get(id=self.id) 
-        
+class UserObject(MongoengineObjectType):    
     class Meta:
        model = User
        interfaces = (graphene.relay.Node, )
@@ -65,11 +60,6 @@ class AuthMutation(graphene.Mutation):
             refresh_token = create_refresh_token(username)
         )
 
-class Mutation(graphene.ObjectType):
-    auth = AuthMutation.Field()
-    create_user = CreateUser.Field()
-    refresh = RefreshMutation.Field()
-    
 class RefreshMutation(graphene.Mutation):
     class Arguments(object):
         refresh_token = graphene.String()
@@ -80,6 +70,13 @@ class RefreshMutation(graphene.Mutation):
     def mutate(self):
         current_user = get_jwt_identity()
         return RefreshMutation(new_token=create_access_token(identity=current_user))
+        
+class Mutation(graphene.ObjectType):
+    auth = AuthMutation.Field()
+    create_user = CreateUser.Field()
+    refresh = RefreshMutation.Field()
+    
+
        
 
 
