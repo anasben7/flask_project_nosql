@@ -15,13 +15,31 @@ def fetch_url(country):
 def fetch_trends(country):
     doc = fetch_url(country)
     soup = BeautifulSoup(doc, "html.parser")
-    titles = soup.find_all("title")
-    descriptions=soup.find_all("description")
-    approximate_traffic = soup.find_all("ht:approx_traffic")
-    trend_dates = soup.find_all("pubdate")
+
+    for item in soup.find_all("item"):
+        title=item.title
+        print(title.text)
+
+
+        
+        description=soup.find('ht:news_item_snippe')
+        trend_time=soup.find('pubDate')
+        """ title=item.title
+        approx_traffic=item.approx_traffic
+        description=item.ht
+        trend_time=item.trend_time """
     
-    for title, traffic, description, trend_date in zip(titles[1:], approximate_traffic, descriptions[1:], trend_dates):
-        db.trends.insert_one({"title":title.text,"approx_traffic":traffic.text, "description":description.text, "trend_time":trend_date.text })
+        
+        
+    """   approx_traffic=soup.find('ht:approx_traffic')
+        description=soup.find('ht:news_item_snippe')
+        trend_time=soup.find('pubDate') """   
+    """ descriptions=soup.find_all("description") """
+    approximate_traffic = soup.find_all("ht:approx_traffic")
+    titles = soup.find_all("title")
+    
+    """ for title, traffic, description, trend_date in zip(titles[1:], approximate_traffic, descriptions[1:], trend_dates):
+        db.trends.insert_one({"title":title.text,"approx_traffic":traffic.text, "description":description.text, "trend_time":trend_date.text }) """
 
     
     return {title.text: re.sub("[+,]", "", traffic.text)
