@@ -21,6 +21,8 @@ connect("projet", host="mongodb://localhost:27017/test1", alias="default")
 
 def create_app(config='backend.settings'):
     app=Flask(__name__)
+    from flask_cors import CORS
+    CORS(app)
     app.config['SECRET_KEY'] = 'achak'
     app.config["JWT_SECRET_KEY"] = "achak"
     auth = GraphQLAuth(app)
