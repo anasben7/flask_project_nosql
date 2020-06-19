@@ -13,3 +13,8 @@ htmlcov/
 dist/
 build/
 *.egg-info/
+projet/backend/__pycache__/*
+projet/backend/__pycache__/__init__.cpython-36.pyc
+projet/backend/__pycache__/extensions.cpython-36.pyc
+projet/backend/__pycache__/settings.cpython-36.pyc
+projet/backend/schemas/__pycache__/*
