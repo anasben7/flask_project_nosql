@@ -170,7 +170,7 @@ class Query(graphene.ObjectType):
             else : 
                 total_negative += 1
 
-        return [Dictionnary("P",total_positive),Dictionnary("N",total_negative)]
+        return [Dictionnary("Positive",total_positive),Dictionnary("Negative",total_negative)]
 
     def resolve_trd(self, info):
         trends=list(TrendModel.objects.all())
