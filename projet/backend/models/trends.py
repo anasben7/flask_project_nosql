@@ -8,3 +8,4 @@ class Trend(Document):
     approx_traffic = StringField()
     description = StringField()
     trend_time = StringField()
+    etat=StringField()
