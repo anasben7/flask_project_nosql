@@ -1,11 +1,12 @@
 import graphene
 from flask import Blueprint
+from ..models.user import User
+from textblob import TextBlob
 from graphene.relay import Node
 from graphene_mongo import MongoengineConnectionField, MongoengineObjectType
 from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
 from ..extensions import mongo
-from ..models.user import User
 from ..models.keywords import get_keywords
 from flask_graphql_auth import (
     AuthInfoField,
@@ -75,8 +76,6 @@ class Mutation(graphene.ObjectType):
 
 
 
-
-
 class Trend(MongoengineObjectType):
     class Meta:
         model = TrendModel
@@ -126,8 +125,8 @@ class Query(graphene.ObjectType):
         print(type(tweets))
         return tweets[0:first]
     
-    def resolve_trd(self, info):
-        return mongo.db.trends.find()
+    # def resolve_trd(self, info):
+    #     return mongo.db.trends.find()
         
     #helper fuction to return to graphql total type " calculate total of traffic"
     def resolve_total(self, info):
@@ -141,14 +140,28 @@ class Query(graphene.ObjectType):
         trends.append(total)
         return total
     #helper fuction to return to graphql test type
-    def resolve_test(self, info):
+    def resolve_trd(self, info):
         trends=list(TrendModel.objects.all())
         total=0
-        for x in trends:
-            traffic=x['approx_traffic'][:-1].replace(',','')
-            total+=int(traffic)
-            print(int(traffic))
-            print("total is : ",total)
+        positivity = 0
+        negativity = 0
+        etat=" "
+
+
+        for descr in trends:
+            
+            descr_content=descr['description']
+            blob_test=TextBlob(descr_content)
+            if blob_test.sentiment.polarity > 0 :
+                descr.etat="positive"
+                positivity += 1
+            else : 
+                negativity += 1
+                descr.etat="negative"
+
+                
+
+
         return trends
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
