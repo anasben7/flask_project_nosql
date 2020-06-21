@@ -17,7 +17,14 @@ ACCESS_TOKEN_SECRET = "GQrGPwhJehHwhQiw7pTC4CzXMioRLBFNWSpiwqIzkZAjA"
 CONSUMER_KEY = "XRuZQD2Sq8Ojtvo3dbe1Z2U0M"
 CONSUMER_SECRET = "FRjWoFHTSxWKIYfRZCsifD6jRJRjTJBunet8JUj4pJOiZp2y4x"
 
+def clean_tweets(x):
+    x = x.replace('#','')
+    return x
 
+def replace_null(x):
+    if x is None:
+        x=0 
+    return x
 
 if __name__ == '__main__':
         auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
@@ -28,7 +35,7 @@ if __name__ == '__main__':
         
         for a in tags :
              for b in a["trends"]:
-                 db.tweets.insert_one({"tweet":b["name"],"url":b["url"],"tweet_volume":b["tweet_volume"],"Country":"USA","as_of":datetime.datetime.now()})
+                 db.tweets.insert_one({"tweet":clean_tweets(b["name"]),"url":b["url"],"tweet_volume":replace_null(b["tweet_volume"]),"Country":"USA","as_of":datetime.datetime.now()})
                 
             
 

@@ -2,6 +2,8 @@ import graphene
 from flask import Blueprint
 from ..models.user import User
 from textblob import TextBlob
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
 from graphene.relay import Node
 from graphene_mongo import MongoengineConnectionField, MongoengineObjectType
 from ..models.trends import Trend as TrendModel
@@ -101,6 +103,7 @@ class Query(graphene.ObjectType):
     trds = MongoengineConnectionField(Trend)
     test = graphene.List(Trend)
     total = graphene.Int()
+    total_sentiment= graphene.String()
     kyrd=graphene.List(Keyword,k=graphene.String())
     kyrd_intrest=graphene.List(Keyword,k=graphene.String())
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
@@ -135,6 +138,8 @@ class Query(graphene.ObjectType):
         for x in tweets:
             if x.tweet_volume is not None:
                 x.percentage=(x.tweet_volume*100.0/total)
+            else:
+                 x.percentage=0   
         print(type(tweets))
         return tweets[0:first]
     
@@ -152,28 +157,68 @@ class Query(graphene.ObjectType):
             print("total is : ",total)
         trends.append(total)
         return total
-    #helper fuction to return to graphql test type
+
+
+
+    def resolve_total_sentiment(self, info):
+        trends=list(TrendModel.objects.all())
+        total_positive=0
+        total_negative=0
+        for descr in trends:     
+            descr_content=descr['description']
+            blob_test=TextBlob(descr_content)
+            if blob_test.sentiment.polarity > 0 :
+                descr.etat="positive"
+                total_positive += 1
+            else : 
+                total_negative += 1
+
+        return total_positive,total_negative
+
+
     def resolve_trd(self, info):
         trends=list(TrendModel.objects.all())
+        doc=[]
         total=0
         positivity = 0
         negativity = 0
         etat=" "
 
+     
 
-        for descr in trends:
-            
+        for descr in trends:  
             descr_content=descr['description']
+            doc.append(descr.description)
             blob_test=TextBlob(descr_content)
             if blob_test.sentiment.polarity > 0 :
                 descr.etat="positive"
                 positivity += 1
             else : 
                 negativity += 1
-                descr.etat="negative"
+                descr.etat="negative"    
+            
+                   
 
-                
+        
+        vectorizer = TfidfVectorizer(stop_words='english')
+        X = vectorizer.fit_transform(doc)
+        true_k = 4
+        model = KMeans(n_clusters=true_k, init='k-means++', max_iter=100, n_init=1)
+        model.fit(X)
+        print("Top terms per cluster:")
+        order_centroids = model.cluster_centers_.argsort()[:, ::-1]
+        terms = vectorizer.get_feature_names()
+        for i in range(true_k):
+            print("Cluster %d:" % i),
+            for ind in order_centroids[i, :10]:
+                print(' %s' % terms[ind])
 
+        print("\n")
+        print("Prediction")
+
+        Y = vectorizer.transform(["Justin"])
+        prediction = model.predict(Y)
+        print(prediction)
 
         return trends
 

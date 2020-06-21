@@ -3,8 +3,13 @@ from .extensions import mongo
 import json
 from bson import json_util
 from flask import render_template
+import atexit
+
 
 main= Blueprint('main',__name__)
+
+
+
 
 @main.route('/')
 def index():
