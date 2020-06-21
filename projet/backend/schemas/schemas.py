@@ -96,14 +96,16 @@ class Keyword(graphene.ObjectType):
     tp=graphene.String()
     timestamp=graphene.String()
     
-
+class Dictionnary(graphene.ObjectType):
+    key = graphene.String()
+    value = graphene.Int()
 class Query(graphene.ObjectType):
     trends = graphene.List(Trend)
     tweets = graphene.List(Tweet,first=graphene.Int())
     trds = MongoengineConnectionField(Trend)
     test = graphene.List(Trend)
     total = graphene.Int()
-    total_sentiment= graphene.String()
+    total_sentiment= graphene.List(Dictionnary)
     kyrd=graphene.List(Keyword,k=graphene.String())
     kyrd_intrest=graphene.List(Keyword,k=graphene.String())
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
@@ -143,9 +145,6 @@ class Query(graphene.ObjectType):
         print(type(tweets))
         return tweets[0:first]
     
-    # def resolve_trd(self, info):
-    #     return mongo.db.trends.find()
-        
     #helper fuction to return to graphql total type " calculate total of traffic"
     def resolve_total(self, info):
         trends=list(TrendModel.objects.all())
@@ -157,8 +156,6 @@ class Query(graphene.ObjectType):
             print("total is : ",total)
         trends.append(total)
         return total
-
-
 
     def resolve_total_sentiment(self, info):
         trends=list(TrendModel.objects.all())
@@ -173,8 +170,7 @@ class Query(graphene.ObjectType):
             else : 
                 total_negative += 1
 
-        return total_positive,total_negative
-
+        return [Dictionnary("P",total_positive),Dictionnary("N",total_negative)]
 
     def resolve_trd(self, info):
         trends=list(TrendModel.objects.all())
@@ -183,9 +179,6 @@ class Query(graphene.ObjectType):
         positivity = 0
         negativity = 0
         etat=" "
-
-     
-
         for descr in trends:  
             descr_content=descr['description']
             doc.append(descr.description)
@@ -196,10 +189,7 @@ class Query(graphene.ObjectType):
             else : 
                 negativity += 1
                 descr.etat="negative"    
-            
-                   
-
-        
+    
         vectorizer = TfidfVectorizer(stop_words='english')
         X = vectorizer.fit_transform(doc)
         true_k = 4
