@@ -6,6 +6,7 @@ client = MongoClient('127.0.0.1', 27017)
 db = client.test1
 pytrend = TrendReq()
 
+
 pytrend.build_payload(kw_list=['Taylor Swift'])
 # Interest by Region
 df = pytrend.interest_by_region()

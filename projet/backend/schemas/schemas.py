@@ -6,7 +6,7 @@ from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
 from ..extensions import mongo
 from ..models.user import User
-from ..models.keywords import get_keywords
+from ..models.keywords import get_keywords,intrest_by_time,related_topic
 from flask_graphql_auth import (
     AuthInfoField,
     GraphQLAuth,
@@ -91,6 +91,8 @@ class Keyword(graphene.ObjectType):
     keyword=graphene.String()
     value=graphene.Int()
     tp=graphene.String()
+    timestamp=graphene.String()
+    
 
 class Query(graphene.ObjectType):
     trends = graphene.List(Trend)
@@ -99,6 +101,7 @@ class Query(graphene.ObjectType):
     test = graphene.List(Trend)
     total = graphene.Int()
     kyrd=graphene.List(Keyword,k=graphene.String())
+    kyrd_intrest=graphene.List(Keyword,k=graphene.String())
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
     trd= graphene.List(Trend)
 
@@ -110,6 +113,14 @@ class Query(graphene.ObjectType):
             for y in x:	
                 kyrds.append(Keyword(y[0],y[1],tp))	
             tp="Rising"     	
+        return kyrds
+
+    def resolve_kyrd_intrest(self,info,k):
+        kyrds=[]
+        rlt=intrest_by_time(k)	
+        for x in rlt:
+            print("--------X-------",x)	
+            kyrds.append(Keyword(timestamp=x[0],value=x[1]))	
         return kyrds
 
     def resolve_tweets(self, info,first):
