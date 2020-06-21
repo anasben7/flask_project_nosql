@@ -4,11 +4,11 @@ import json
 from bson import json_util
 from flask import render_template
 import atexit
-from apscheduler.scheduler import Scheduler
+
 
 main= Blueprint('main',__name__)
 
-cron = Scheduler(daemon=True)
+
 
 
 @main.route('/')
