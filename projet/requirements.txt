@@ -32,3 +32,5 @@ ssh-import-id==5.7
 tweepy==3.8.0
 urllib3==1.25.9
 flask-cors
+textblob
+scikit-learn
