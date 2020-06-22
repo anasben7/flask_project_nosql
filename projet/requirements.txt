@@ -34,3 +34,6 @@ urllib3==1.25.9
 flask-cors
 textblob
 scikit-learn
+flask_mongoengine
+flask_wtf
+flask_login

@@ -8,14 +8,15 @@ from graphene.relay import Node
 from graphene_mongo import MongoengineConnectionField, MongoengineObjectType
 from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
+from ..models.user import User as UserModel
 from ..extensions import mongo
-from ..models.user import User
 from ..models.keywords import get_keywords,intrest_by_time,related_topic
 from ..models.keywords import get_keywords
 from flask_graphql_auth import (
     AuthInfoField,
     GraphQLAuth,
     get_jwt_identity,
+    get_raw_jwt,
     create_access_token,
     create_refresh_token,
     query_header_jwt_required,
@@ -26,7 +27,7 @@ from flask_graphql_auth import (
 
 class UserObject(MongoengineObjectType):    
     class Meta:
-       model = User
+       model = UserModel
        interfaces = (graphene.relay.Node, )
 
 
@@ -52,14 +53,16 @@ class AuthMutation(graphene.Mutation):
         password = graphene.String()
 
     def mutate(self, info , username, password) :
-        user = User(username=username,password=password)
-        print(user)
+        user = UserModel.objects(username=username).first()
         if not user:
             raise Exception('Authenication Failure : User is not registered')
-        return AuthMutation(
-            access_token = create_access_token(username),
-            refresh_token = create_refresh_token(username)
-        )
+        elif user.password==password:
+            return AuthMutation(
+                access_token = create_access_token(username),
+                refresh_token = create_refresh_token(username)
+            )
+        else :
+            raise Exception('Authenication Failure : Credentials are false')
 
 class RefreshMutation(graphene.Mutation):
     class Arguments(object):
@@ -107,7 +110,7 @@ class Query(graphene.ObjectType):
     total = graphene.Int()
     total_sentiment= graphene.List(Dictionnary)
     kyrd=graphene.List(Keyword,k=graphene.String())
-    kyrd_intrest=graphene.List(Keyword,k=graphene.String())
+    kyrd_intrest=graphene.List(Keyword,k=graphene.String(),start=graphene.String(),dend=graphene.String())
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
     trd= graphene.List(Trend)
 
@@ -121,11 +124,12 @@ class Query(graphene.ObjectType):
             tp="Rising"     	
         return kyrds
 
-    def resolve_kyrd_intrest(self,info,k):
+    def resolve_kyrd_intrest(self,info,k,start="2020",dend="2020"):
         kyrds=[]
+        startdate=start.split("-")
+        enddate=dend.split("-")
         rlt=intrest_by_time(k)	
         for x in rlt:
-            print("--------X-------",x)	
             kyrds.append(Keyword(timestamp=x[0],value=x[1]))	
         return kyrds
 
