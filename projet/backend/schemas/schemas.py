@@ -10,7 +10,7 @@ from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
 from ..models.user import User as UserModel
 from ..extensions import mongo
-from ..models.keywords import get_keywords,intrest_by_time,related_topic
+from ..models.keywords import get_keywords,intrest_by_time,related_topic,intrest_by_time2,intrest_by_time3
 from ..models.keywords import get_keywords
 from flask_graphql_auth import (
     AuthInfoField,
@@ -80,9 +80,6 @@ class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     refresh = RefreshMutation.Field()
 
-
-
-
 class Trend(MongoengineObjectType):
     class Meta:
         model = TrendModel
@@ -98,7 +95,11 @@ class Keyword(graphene.ObjectType):
     value=graphene.Int()
     tp=graphene.String()
     timestamp=graphene.String()
-    
+
+class keywordIntrest(graphene.ObjectType):
+    nm=graphene.String()
+    intrest=graphene.List(Keyword)
+
 class Dictionnary(graphene.ObjectType):
     key = graphene.String()
     value = graphene.Int()
@@ -113,6 +114,35 @@ class Query(graphene.ObjectType):
     kyrd_intrest=graphene.List(Keyword,k=graphene.String(),start=graphene.String(),dend=graphene.String())
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
     trd= graphene.List(Trend)
+    intrest=graphene.List(keywordIntrest,k=graphene.String(),start=graphene.String(),dend=graphene.String())
+    topics=graphene.List(Keyword,k=graphene.String())
+
+    def resolve_topic(self,info,k):
+        kyrds=[]
+        rlt=related_topic(k)	
+        for x in rlt:	
+            for y in x:	
+                kyrds.append(Keyword(y[0],y[1],tp))	
+            tp="Rising"     	
+        return kyrds
+        
+    def resolve_intrest(self,info,k,start,dend):
+        kyrds=[]
+        words=[]
+        intrest=[]
+        startdate=start.split("-")
+        enddate=dend.split("-")
+        words=k.split(",")
+        print(startdate)
+        print(enddate)
+        rlt=intrest_by_time3(words[0:4],startdate,enddate)
+        print(rlt)
+        for key,value in rlt.items():
+            for x in value:
+                kyrds.append(Keyword(timestamp=x[0],value=x[1]))
+            intrest.append(keywordIntrest(nm=key,intrest=kyrds))
+            kyrds=[]
+        return intrest
 
     def resolve_kyrd(self,info,k):
         kyrds=[]
@@ -193,7 +223,7 @@ class Query(graphene.ObjectType):
             else : 
                 negativity += 1
                 descr.etat="negative"    
-    
+        
         vectorizer = TfidfVectorizer(stop_words='english')
         X = vectorizer.fit_transform(doc)
         true_k = 4
@@ -213,6 +243,7 @@ class Query(graphene.ObjectType):
         Y = vectorizer.transform(["Justin"])
         prediction = model.predict(Y)
         print(prediction)
+        
 
         return trends
 
