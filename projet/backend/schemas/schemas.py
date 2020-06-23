@@ -10,7 +10,7 @@ from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
 from ..models.user import User as UserModel
 from ..extensions import mongo
-from ..models.keywords import get_keywords,intrest_by_time,related_topic,intrest_by_time2,intrest_by_time3
+from ..models.keywords import get_keywords,intrest_by_time,related_topic,intrest_by_time2,intrest_by_time3,related_topic2
 from ..models.keywords import get_keywords
 from flask_graphql_auth import (
     AuthInfoField,
@@ -103,6 +103,21 @@ class keywordIntrest(graphene.ObjectType):
 class Dictionnary(graphene.ObjectType):
     key = graphene.String()
     value = graphene.Int()
+
+
+
+class Topic(graphene.ObjectType):
+    value= graphene.Int()
+    formattedvalue=graphene.String()
+    link=graphene.String()
+    topic_mid = graphene.String()
+    topic_title=graphene.String()
+    topic_type=graphene.String()
+
+class DictionnaryTopics(graphene.ObjectType):
+    key = graphene.String()
+    value = graphene.List(Topic)
+
 class Query(graphene.ObjectType):
     trends = graphene.List(Trend)
     tweets = graphene.List(Tweet,first=graphene.Int())
@@ -115,16 +130,27 @@ class Query(graphene.ObjectType):
     # this trd is not working cz the PyMongo return a dictionary so we will be using the Mongoengine OK
     trd= graphene.List(Trend)
     intrest=graphene.List(keywordIntrest,k=graphene.String(),start=graphene.String(),dend=graphene.String())
-    topics=graphene.List(Keyword,k=graphene.String())
+    topics=graphene.List(DictionnaryTopics,k=graphene.String())
 
-    def resolve_topic(self,info,k):
+    def resolve_topics(self,info,k):
         kyrds=[]
-        rlt=related_topic(k)	
-        for x in rlt:	
+        rlt=related_topic2(k)	
+        topics=[]
+        for n,x in rlt.items():
+            print(n)
             for y in x:	
-                kyrds.append(Keyword(y[0],y[1],tp))	
-            tp="Rising"     	
-        return kyrds
+                kyrds.append(Topic(
+                    value= y[1],
+                    formattedvalue=y[2],
+                    link=y[3],
+                    topic_mid = y[4],
+                    topic_title=y[5],
+                    topic_type=y[6]
+                    )
+                    )
+            topics.append(DictionnaryTopics(key=n,value=kyrds))
+            kyrds=[]
+        return topics
         
     def resolve_intrest(self,info,k,start,dend):
         kyrds=[]
@@ -246,5 +272,6 @@ class Query(graphene.ObjectType):
         
 
         return trends
+    
 
 schema = graphene.Schema(query=Query, mutation=Mutation)

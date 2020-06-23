@@ -69,3 +69,25 @@ def intrest_by_time3(keyword,startdate=['01','06','2020'],enddate=['27','06','20
         test=j.reset_index().values.tolist()[1:]
         dict[bf]=test
     return dict
+
+def related_topic2(keyword):
+    pytrend = TrendReq()
+    pytrend.build_payload(kw_list=[keyword])
+    related_topic=pytrend.related_topics()
+    bf=[]
+    topics={}
+    dataframes=[]
+    name=[]
+    dic={}
+    #liste=list(related_topic.values())[0]
+    for y,x in related_topic.items():
+        for i,j in x.items():
+            name.append(i)
+            dataframes.append(j)
+    
+    dataframes[1].drop(columns=['hasData'],inplace=True)
+    r=0
+    for i in dataframes:
+        dic[name[r]]=i.reset_index().values.tolist()[0:]
+        r+=1
+    return dic
