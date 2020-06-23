@@ -113,6 +113,7 @@ class Topic(graphene.ObjectType):
     topic_mid = graphene.String()
     topic_title=graphene.String()
     topic_type=graphene.String()
+    key=graphene.String()
 
 class DictionnaryTopics(graphene.ObjectType):
     key = graphene.String()
@@ -145,7 +146,8 @@ class Query(graphene.ObjectType):
                     link=y[3],
                     topic_mid = y[4],
                     topic_title=y[5],
-                    topic_type=y[6]
+                    topic_type=y[6],
+                    key=n
                     )
                     )
             topics.append(DictionnaryTopics(key=n,value=kyrds))
