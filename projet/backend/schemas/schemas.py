@@ -10,7 +10,7 @@ from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
 from ..models.user import User as UserModel
 from ..extensions import mongo
-from ..models.keywords import get_keywords,intrest_by_time,related_topic,intrest_by_time2,intrest_by_time3,related_topic2
+from ..models.keywords import get_keywords,intrest_by_time,related_topic,intrest_by_time2,intrest_by_time3,related_topic2,intrestByCountry
 from ..models.keywords import get_keywords
 from flask_graphql_auth import (
     AuthInfoField,
@@ -104,8 +104,6 @@ class Dictionnary(graphene.ObjectType):
     key = graphene.String()
     value = graphene.Int()
 
-
-
 class Topic(graphene.ObjectType):
     value= graphene.Int()
     formattedvalue=graphene.String()
@@ -132,13 +130,20 @@ class Query(graphene.ObjectType):
     trd= graphene.List(Trend)
     intrest=graphene.List(keywordIntrest,k=graphene.String(),start=graphene.String(),dend=graphene.String())
     topics=graphene.List(DictionnaryTopics,k=graphene.String())
+    intrestbyRegion=graphene.List(Dictionnary,k=graphene.String())
+
+    def resolve_intrestbyRegion(self,info,k):
+        tmp=intrestByCountry(k)
+        liste=[]
+        for x in tmp:
+            liste.append(Dictionnary(key=x[0],value=x[1]))
+        return liste
 
     def resolve_topics(self,info,k):
         kyrds=[]
         rlt=related_topic2(k)	
         topics=[]
         for n,x in rlt.items():
-            print(n)
             for y in x:	
                 kyrds.append(Topic(
                     value= y[1],
@@ -161,10 +166,7 @@ class Query(graphene.ObjectType):
         startdate=start.split("-")
         enddate=dend.split("-")
         words=k.split(",")
-        print(startdate)
-        print(enddate)
         rlt=intrest_by_time3(words[0:4],startdate,enddate)
-        print(rlt)
         for key,value in rlt.items():
             for x in value:
                 kyrds.append(Keyword(timestamp=x[0],value=x[1]))
@@ -204,7 +206,6 @@ class Query(graphene.ObjectType):
                 x.percentage=(x.tweet_volume*100.0/total)
             else:
                  x.percentage=0   
-        print(type(tweets))
         return tweets[0:first]
     
     #helper fuction to return to graphql total type " calculate total of traffic"
@@ -214,8 +215,6 @@ class Query(graphene.ObjectType):
         for x in trends:
             traffic=x['approx_traffic'][:-1].replace(',','')
             total+=int(traffic)
-            print(int(traffic))
-            print("total is : ",total)
         trends.append(total)
         return total
 

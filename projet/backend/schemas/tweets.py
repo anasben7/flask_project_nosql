@@ -39,8 +39,6 @@ class Query(graphene.ObjectType):
         for x in trends:
             traffic=x['approx_traffic'][:-1].replace(',','')
             total+=int(traffic)
-            print(int(traffic))
-            print("total is : ",total)
         trends.append(total)
         return total
     #helper fuction to return to graphql test type
@@ -50,8 +48,6 @@ class Query(graphene.ObjectType):
         for x in trends:
             traffic=x['approx_traffic'][:-1].replace(',','')
             total+=int(traffic)
-            print(int(traffic))
-            print("total is : ",total)
         return trends
 
 schema = graphene.Schema(query=Query)

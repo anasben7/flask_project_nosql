@@ -3,7 +3,6 @@ from pytrends.request import TrendReq
 
 
 def get_keywords(keyword):
-    print("qdsqdsqdsqDQS")
     pytrend = TrendReq()
     suggest=[]
     pytrend.build_payload(kw_list=[keyword])
@@ -19,7 +18,6 @@ def related_topic(keyword):
     pytrend = TrendReq()
     pytrend.build_payload(kw_list=[keyword])
     related_topic=pytrend.related_topics()
-    print(related_topic)
     topics=[]
     liste=list(related_topic.values())[0]
     for y in liste.values():
@@ -27,6 +25,13 @@ def related_topic(keyword):
         topics.append(n)
     return topics
 
+def intrestByCountry(keyword):
+    pytrend = TrendReq()
+    pytrend.build_payload(kw_list=[keyword])
+    df = pytrend.interest_by_region(resolution='COUNTRY',inc_low_vol=True)
+    bf=df.reset_index().values.tolist()[0:]
+    print(bf)
+    return bf
 
 def intrest_by_time(keyword,year_start=2020,year_end=2020):
     pytrend = TrendReq()
@@ -34,7 +39,6 @@ def intrest_by_time(keyword,year_start=2020,year_end=2020):
     df=pytrend.get_historical_interest(kw_list, year_start=year_start, month_start=1, day_start=1, hour_start=0, year_end=year_end, month_end=2, day_end=1, hour_end=0, cat=0, geo='', gprop='', sleep=0)
     bf=[df.columns.tolist()] + df.reset_index().values.tolist()
     return bf[1:]
-
 
 def intrest_by_time2(keyword,year_start=2020,year_end=2020):
     pytrend = TrendReq()
