@@ -8,7 +8,9 @@ from graphene.relay import Node
 from graphene_mongo import MongoengineConnectionField, MongoengineObjectType
 from ..models.trends import Trend as TrendModel
 from ..models.tweets import Tweet as TweetModel
+from ..models.places import Places as PlaceModel
 from ..models.user import User as UserModel
+from ..models.archive import TweetArchive as TweetArchiveModel
 from ..extensions import mongo
 from ..models.keywords import get_keywords,intrest_by_time,related_topic,intrest_by_time2,intrest_by_time3,related_topic2,intrestByCountry
 from ..models.keywords import get_keywords,clustring
@@ -29,7 +31,6 @@ class UserObject(MongoengineObjectType):
     class Meta:
        model = UserModel
        interfaces = (graphene.relay.Node, )
-
 
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserObject)
@@ -117,6 +118,17 @@ class DictionnaryTopics(graphene.ObjectType):
     key = graphene.String()
     value = graphene.List(Topic)
 
+
+class Place(MongoengineObjectType):
+    class Meta:
+        model = PlaceModel
+        interfaces = (Node,)
+
+class TweetArchive(MongoengineObjectType):
+    class Meta:
+        model = TweetArchiveModel
+        interfaces = (Node,)
+
 class Query(graphene.ObjectType):
     trends = graphene.List(Trend)
     tweets = graphene.List(Tweet,first=graphene.Int())
@@ -132,7 +144,32 @@ class Query(graphene.ObjectType):
     topics=graphene.List(DictionnaryTopics,k=graphene.String())
     intrestbyRegion=graphene.List(Dictionnary,k=graphene.String())
     cluster=graphene.List(Keyword,k=graphene.String())
+    countries=graphene.List(Place)
+    places=graphene.List(Place,country=graphene.String())
+    tweetsArchive= graphene.List(TweetArchive,page=graphene.Int(),number=graphene.Int(),dates=graphene.String(),code=graphene.String())
+    countArchive = graphene.Int(dates=graphene.String(),code=graphene.String())
 
+    def resolve_countArchive(self,info,dates,code):
+        dts=dates.split(",")
+        count=TweetArchiveModel.getCount(dts,code)
+        return count
+    def resolve_tweetsArchive(self,info,page,number,dates,code):
+        dts=dates.split(",")
+        archive=TweetArchiveModel.get(page,number,dts,code)
+        return archive
+
+
+
+
+    def resolve_places(self,info,country):
+        places=PlaceModel.get(country)
+        return places
+
+
+
+    def resolve_countries(self,info):
+        countries=PlaceModel.getCountries()
+        return countries
 
     def resolve_cluster(self,info,k):
         tmp=clustring(k)

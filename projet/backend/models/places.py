@@ -9,11 +9,14 @@ class Places(Document):
     _id = StringField()
     name = StringField()
     code = StringField()
-    Country = StringField()
+    country = StringField()
     is_country=BooleanField()
     
     @queryset_manager
     def get(doc_cls, queryset,c):
         return queryset.filter(country=c)
+    @queryset_manager
+    def getCountries(doc_cls, queryset):
+        return queryset.filter(is_country=True)
+    
 
-print(Places.get("United States"))
