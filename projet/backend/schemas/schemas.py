@@ -11,7 +11,7 @@ from ..models.tweets import Tweet as TweetModel
 from ..models.user import User as UserModel
 from ..extensions import mongo
 from ..models.keywords import get_keywords,intrest_by_time,related_topic,intrest_by_time2,intrest_by_time3,related_topic2,intrestByCountry
-from ..models.keywords import get_keywords
+from ..models.keywords import get_keywords,clustring
 from flask_graphql_auth import (
     AuthInfoField,
     GraphQLAuth,
@@ -131,6 +131,15 @@ class Query(graphene.ObjectType):
     intrest=graphene.List(keywordIntrest,k=graphene.String(),start=graphene.String(),dend=graphene.String())
     topics=graphene.List(DictionnaryTopics,k=graphene.String())
     intrestbyRegion=graphene.List(Dictionnary,k=graphene.String())
+    cluster=graphene.List(Keyword,k=graphene.String())
+
+
+    def resolve_cluster(self,info,k):
+        tmp=clustring(k)
+        liste=[]
+        for x in tmp:
+            liste.append(Keyword(keyword=x))
+        return liste
 
     def resolve_intrestbyRegion(self,info,k):
         tmp=intrestByCountry(k)

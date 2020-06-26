@@ -1,49 +1,92 @@
-import tweepy
+import requests
+import re
+from bs4 import BeautifulSoup
+from pymongo import MongoClient
+from datetime import date, timedelta
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 import datetime
 import json
 import tweepy
-from pymongo import MongoClient
 
 client = MongoClient('127.0.0.1', 27017)
 db = client.test1
-
-#Variables that contains the user credentials to access Twitter API
-ACCESS_TOKEN = "4518193835-XGOBCZibmnUdgkPZM3CGLL6JFKqoAktx1VimWYD"
-ACCESS_TOKEN_SECRET = "GQrGPwhJehHwhQiw7pTC4CzXMioRLBFNWSpiwqIzkZAjA"
-CONSUMER_KEY = "XRuZQD2Sq8Ojtvo3dbe1Z2U0M"
-CONSUMER_SECRET = "FRjWoFHTSxWKIYfRZCsifD6jRJRjTJBunet8JUj4pJOiZp2y4x"
-
 countries={}
+#db.toptrend.drop()
 
-def clean_tweets(x):
-    x = x.replace('#','')
-    return x
+def generateDate():
+    sdate = date(2020, 4, 15)   # start date
+    edate = date.today()  # end date
 
-def replace_null(x):
-    if x is None:
-        x=0 
-    return x
+    delta = edate - sdate       # as timedelta
+    days=[]
+    for i in range(delta.days + 1):
+        day = sdate + timedelta(days=i)
+        days.append(day)
+    return days
 
-auth = OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-auth.set_access_token(ACCESS_TOKEN,ACCESS_TOKEN_SECRET)
-api = tweepy.API(auth)
-tags = api.trends_available()
-print(tags[0])
+def fetch_url_test():
+    url = f"https://trendogate.com/placebydate/1118108/2015-04-01"
+    response = requests.get(url)
+    return response.content
 
-for x in tags:
-    countries[x['name']]=[x['woeid'],x['country'],x['countryCode']]
+def fetch_url(country,date):
+    url = f"https://trendogate.com/placebydate/{country}/{date}"
+    response = requests.get(url)
+    return response.content
 
-for key,value in countries.items():
-    db.places.insert_one({"name":key,"woeid":value[0],"country":value[1],"countryCode":value[2]})
+def clean(descr):
+    descr = descr.replace('&quot;','')
+    descr = descr.replace('&#39;','')
+    descr = descr.replace('&nbsp;','')
+    return descr
 
-for key,value in countries.items():
-    tags = api.trends_place(value[0])
-    if value[1]=='':
-        value[1]=key
-        key=''
-    for a in tags :
-        for b in a["trends"]:
-            db.tweets.insert_one({"tweet":clean_tweets(b["name"]),"url":b["url"],"tweet_volume":replace_null(b["tweet_volume"]),"place":key,"Country":value[1],"as_of":datetime.datetime.now()})
+def fetch_trends(country,date):
+    doc=fetch_url(country,date)
+    tmp=[]
+    try:
+        soup = BeautifulSoup(doc, "html.parser")
+        ul = soup.find('ul',{'class':'list-group'})
+        lis = ul.findChildren('li' , recursive=False) 
+        for li in lis:
+            children = li.findChildren("a" , recursive=False)
+            for child in children:
+                txt=child.text
+                tmp.append(txt[1:])
+    except :
+        return tmp
+        print("error Nonetype")
+    return tmp
+
+def registerTop(place,country,is_country,code,date):
+    tops=fetch_trends(code,date)
+    if tops:
+        for top in tops:
+            print(top)
+            db.toptrend.insert_one({"title":top,"place":place,"code":code,"is_country":is_country,"country":country,'date':date})
+
+def getAllplaces():
+    collection = db['countries']
+    cursor = collection.find({})
+    countries={}
+    for document in cursor:
+        countries[document['name']]={"code":document['code'],"is_country":document['is_country'],"country":document['country']}
+    return countries
+
+def getAllTopsTrends():
+    countries=getAllplaces()
+    days=generateDate()
+    for day in days:
+        day=str(day)
+        for place,value in countries.items():
+            if value['is_country']:
+                registerTop(place,place,value['is_country'],value['code'],day)
+            else :
+                registerTop(place,value['country'],value['is_country'],value['code'],day)
+            
+
+if __name__ == '__main__':
+    getAllTopsTrends()      
+    #registerTop("United State",True,'23424977','2020-06-23')
+    # if you want to print the result

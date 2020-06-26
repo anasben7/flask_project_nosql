@@ -1,5 +1,8 @@
 import pandas as pd                        
 from pytrends.request import TrendReq
+from textblob import TextBlob
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
 
 
 def get_keywords(keyword):
@@ -77,7 +80,11 @@ def intrest_by_time3(keyword,startdate=['01','06','2020'],enddate=['27','06','20
 def related_topic2(keyword):
     pytrend = TrendReq()
     pytrend.build_payload(kw_list=[keyword])
-    related_topic=pytrend.related_topics()
+    try:
+        related_topic=pytrend.related_topics()
+    except pytrend.exceptions.Timeout:
+        print("Timeout")
+        
     bf=[]
     topics={}
     dataframes=[]
@@ -95,3 +102,47 @@ def related_topic2(keyword):
         dic[name[r]]=i.reset_index().values.tolist()[0:]
         r+=1
     return dic
+
+def clustring(keyword):
+    pytrend = TrendReq()
+    kw_list=[keyword]
+    doc=[]
+    clusters=[]
+    cluster=[]
+    pytrend.build_payload(kw_list=[keyword])
+    try:
+        related_queries=pytrend.related_queries()
+    except pytrend.exceptions.Timeout:
+        print("WAAAAIt")
+
+    liste=list(related_queries.values())[0]
+    for y in liste.values():
+        n=y.values.tolist()
+        for title in n:
+            doc.append(title[0])
+    dic=related_topic2(keyword)
+    #print(dic)
+    topics=[]
+    for n,x in dic.items():
+        for y in x:	
+            topics.append(y[5])
+            topics.append(y[6])
+    doc=doc+topics
+    
+    vectorizer = TfidfVectorizer(stop_words='english')
+    X = vectorizer.fit_transform(doc)
+    true_k = 4
+    model = KMeans(n_clusters=true_k, init='k-means++', max_iter=100, n_init=1)
+    model.fit(X)
+    order_centroids = model.cluster_centers_.argsort()[:, ::-1]
+    terms = vectorizer.get_feature_names()
+    for i in range(true_k):
+        for ind in order_centroids[i, :10]:
+            cluster.append(terms[ind])
+        clusters.append(cluster)
+        cluster=[]
+
+    Y = vectorizer.transform([keyword])
+    prediction = model.predict(Y)
+    return clusters[prediction[0]]
+
