@@ -17,7 +17,9 @@ the technologies used during the development of our application:
 - Bootstrap,
 - Vagrant.
 
+Some screenshots of the app:
 
+![alt text](https://user-images.githubusercontent.com/48560744/101241570-920bc900-36f7-11eb-8150-7b900b56eaea.png)
 
 
 
