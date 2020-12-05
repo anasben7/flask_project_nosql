@@ -50,6 +50,6 @@ Some screenshots of the app:
   <img src="https://user-images.githubusercontent.com/48560744/101241577-9c2dc780-36f7-11eb-95e0-d8c2580aaf5b.png" width="750">
 </p>
 
-
+-
 
 
