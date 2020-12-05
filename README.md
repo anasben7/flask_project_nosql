@@ -20,8 +20,8 @@ the technologies used during the development of our application:
 Some screenshots of the app:
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/48560744/101241570-920bc900-36f7-11eb-8150-7b900b56eaea.png" width="350" title="Landing Page">
-  <img src="https://user-images.githubusercontent.com/48560744/101241573-946e2300-36f7-11eb-80bf-8c6c21749185.png" width="350" alt="accessibility text">
+  <p>Landing Page</p>
+  <img src="https://user-images.githubusercontent.com/48560744/101241570-920bc900-36f7-11eb-8150-7b900b56eaea.png" width="550" title="Landing Page">
 </p>
 
 
